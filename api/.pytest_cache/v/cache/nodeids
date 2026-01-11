@@ -1,4 +1,0 @@
-[
-  "test_main.py::test_health_check",
-  "test_main.py::test_predict_endpoint"
-]
