@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ecommerce-recommendation
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secret.yaml
+  - deployment.yaml
+  - service.yaml
+  - hpa.yaml
+  - ingress.yaml
+  - monitoring/prometheus-deployment.yaml
+  - monitoring/grafana-deployment.yaml
+  - monitoring/service-monitor.yaml
+  - monitoring/prometheus-rules.yaml
+
+commonLabels:
+  app: recommendation-api
+  managed-by: kustomize
+

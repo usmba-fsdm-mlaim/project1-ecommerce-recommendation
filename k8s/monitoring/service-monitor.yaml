@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: recommendation-api-monitor
+  namespace: ecommerce-recommendation
+  labels:
+    app: recommendation-api
+spec:
+  selector:
+    matchLabels:
+      app: recommendation-api
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+

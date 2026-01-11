@@ -1,0 +1,68 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: recommendation-api-alerts
+  namespace: ecommerce-recommendation
+  labels:
+    app: recommendation-api
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+  - name: recommendation-api
+    interval: 30s
+    rules:
+    - alert: HighErrorRate
+      expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High error rate detected"
+        description: "Error rate is {{ $value }} errors per second"
+
+    - alert: HighResponseTime
+      expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High response time detected"
+        description: "95th percentile response time is {{ $value }} seconds"
+
+    - alert: PodCrashLooping
+      expr: rate(kube_pod_container_status_restarts_total{pod=~"recommendation-api.*"}[15m]) > 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Pod is crash looping"
+        description: "Pod {{ $labels.pod }} is restarting frequently"
+
+    - alert: HighCPUUsage
+      expr: rate(container_cpu_usage_seconds_total{pod=~"recommendation-api.*"}[5m]) > 0.8
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High CPU usage"
+        description: "Pod {{ $labels.pod }} CPU usage is {{ $value }}"
+
+    - alert: HighMemoryUsage
+      expr: container_memory_usage_bytes{pod=~"recommendation-api.*"} / container_spec_memory_limit_bytes > 0.9
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High memory usage"
+        description: "Pod {{ $labels.pod }} memory usage is above 90%"
+
+    - alert: PodNotReady
+      expr: kube_pod_status_ready{condition="false", pod=~"recommendation-api.*"} == 1
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Pod is not ready"
+        description: "Pod {{ $labels.pod }} is not ready"
+
