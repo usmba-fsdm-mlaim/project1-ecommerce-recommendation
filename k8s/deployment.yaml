@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: recommendation-api
-  namespace: ecommerce-recommendation
+  namespace: production
   labels:
     app: recommendation-api
     version: v1
@@ -21,38 +21,34 @@ spec:
       labels:
         app: recommendation-api
         version: v1
-      annotations: {}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/prometheus"
     spec:
       containers:
       - name: recommendation-api
-        image: recommendation-api:latest
-        imagePullPolicy: IfNotPresent
+        image: ghcr.io/your-org/recommendation-api:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
           name: http
           protocol: TCP
         env:
+        - name: MODEL_PATH
+          value: "/app/models/recommendation_model.pkl"
+        - name: DATA_PATH
+          value: "/app/data/cleaned_data.csv"
         - name: LOG_LEVEL
-          valueFrom:
-            configMapKeyRef:
-              name: recommendation-api-config
-              key: LOG_LEVEL
-        - name: MODEL_VERSION
-          valueFrom:
-            configMapKeyRef:
-              name: recommendation-api-config
-              key: MODEL_VERSION
+          value: "INFO"
         - name: WORKERS
-          valueFrom:
-            configMapKeyRef:
-              name: recommendation-api-config
-              key: WORKERS
+          value: "4"
         resources:
           requests:
-            memory: "256Mi"
+            memory: "512Mi"
             cpu: "250m"
           limits:
-            memory: "512Mi"
+            memory: "1Gi"
             cpu: "500m"
         livenessProbe:
           httpGet:
@@ -70,12 +66,102 @@ spec:
           periodSeconds: 5
           timeoutSeconds: 3
           failureThreshold: 3
-        startupProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 0
-          periodSeconds: 10
-          timeoutSeconds: 3
-          failureThreshold: 30
-
+        volumeMounts:
+        - name: model-storage
+          mountPath: /app/models
+        - name: data-storage
+          mountPath: /app/data
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: model-pvc
+      - name: data-storage
+        persistentVolumeClaim:
+          claimName: data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommendation-api-service
+  namespace: production
+  labels:
+    app: recommendation-api
+spec:
+  type: LoadBalancer
+  selector:
+    app: recommendation-api
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  sessionAffinity: ClientIP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: model-pvc
+  namespace: production
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-pvc
+  namespace: production
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: recommendation-api-hpa
+  namespace: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: recommendation-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max

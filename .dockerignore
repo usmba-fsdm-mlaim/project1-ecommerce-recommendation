@@ -1,55 +1,14 @@
-# Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
 venv/
-env/
-ENV/
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-
-# IDE
+.git/
 .vscode/
 .idea/
-*.swp
-*.swo
-.DS_Store
-
-# Git
-.git/
-.gitignore
-.gitattributes
-
-# Documentation
-docs/
-*.md
-!README.md
-
-# Data (should be mounted as volumes)
 data/*.csv
 models/*.pkl
-logs/
-
-# CI/CD
+mlruns/
+.pytest_cache/
+*.md
+tests/
 .github/
-
-# Kubernetes
 k8s/
-
-# Docker
-.dockerignore
-Dockerfile
-docker-compose.yml
-
-# Misc
-*.log
-.env
-.env.local
-tmp/
-temp/

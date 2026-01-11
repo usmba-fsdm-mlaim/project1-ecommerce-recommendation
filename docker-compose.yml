@@ -1,11 +1,8 @@
 version: '3.8'
 
 services:
-  # Recommendation API
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     image: recommendation-api:latest
     container_name: recommendation-api
     ports:
@@ -17,7 +14,6 @@ services:
     environment:
       - MODEL_PATH=/app/models/recommendation_model.pkl
       - DATA_PATH=/app/data/cleaned_data.csv
-      - LOG_LEVEL=INFO
     networks:
       - app-network
     healthcheck:
@@ -25,17 +21,15 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
     restart: unless-stopped
 
-  # Web Interface
   web:
     image: nginx:alpine
     container_name: recommendation-web
     ports:
       - "80:80"
     volumes:
-      - ./static:/usr/share/nginx/html
+      - ./web:/usr/share/nginx/html
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - api
@@ -43,7 +37,6 @@ services:
       - app-network
     restart: unless-stopped
 
-  # MLflow Tracking Server
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.9.2
     container_name: mlflow-server
@@ -62,14 +55,13 @@ services:
       - app-network
     restart: unless-stopped
 
-  # Prometheus for metrics
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -78,7 +70,6 @@ services:
       - app-network
     restart: unless-stopped
 
-  # Grafana for visualization
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -86,8 +77,8 @@ services:
       - "3000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
