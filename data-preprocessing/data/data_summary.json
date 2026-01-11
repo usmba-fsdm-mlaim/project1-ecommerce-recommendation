@@ -1,0 +1,11 @@
+{
+  "total_records": 2,
+  "unique_users": 2,
+  "unique_products": 2,
+  "unique_brands": 2,
+  "avg_rating": 3.0,
+  "date_range": {
+    "start": "2023-01-01 00:00:00",
+    "end": "2023-02-01 00:00:00"
+  }
+}
