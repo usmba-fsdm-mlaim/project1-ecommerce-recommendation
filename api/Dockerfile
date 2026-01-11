@@ -1,20 +1,20 @@
-# 1. On part d'une version légère de Python
-FROM python:3.9-slim
+# Utiliser une image Python légère
+FROM python:3.10-slim
 
-# 2. On crée le dossier de travail dans le conteneur
+# Définir le répertoire de travail
 WORKDIR /app
 
-# 3. On copie d'abord les requirements (astuce pour que le build soit plus rapide)
+# Copier les fichiers de dépendances
 COPY requirements.txt .
 
-# 4. On installe les librairies
+# Installer les dépendances
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 5. On copie tout le reste du code
+# Copier tout le code source
 COPY . .
 
-# 6. On indique que l'app tourne sur le port 8000
+# Exposer le port
 EXPOSE 8000
 
-# 7. La commande de démarrage quand le conteneur se lance
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Lancer l'application (app:app au lieu de main:app)
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
