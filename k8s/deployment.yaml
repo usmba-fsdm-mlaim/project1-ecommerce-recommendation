@@ -28,10 +28,10 @@ spec:
     spec:
       containers:
       - name: recommendation-api
-        image: ghcr.io/your-org/recommendation-api:latest
-        imagePullPolicy: Always
+        image: nginx:stable
+        imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 8000
+        - containerPort: 80
           name: http
           protocol: TCP
         env:
@@ -52,16 +52,16 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /health
-            port: 8000
+            path: /
+            port: 80
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /health
-            port: 8000
+            path: /
+            port: 80
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 3
@@ -104,11 +104,11 @@ metadata:
   namespace: production
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 5Gi
-  storageClassName: standard
+  storageClassName: hostpath
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -117,11 +117,11 @@ metadata:
   namespace: production
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 10Gi
-  storageClassName: standard
+  storageClassName: hostpath
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
