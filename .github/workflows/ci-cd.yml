@@ -26,7 +26,7 @@ jobs:
           docker build -t recommendation-api:latest .
 
       - name: Deploy to Kubernetes
-        # On utilise le shell par défaut de Windows ici
+        # on utilise le shell par défaut de Windows ici
         run: |
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/deployment.yaml
