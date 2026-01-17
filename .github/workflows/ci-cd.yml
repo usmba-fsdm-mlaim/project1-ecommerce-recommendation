@@ -168,10 +168,13 @@ jobs:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ github.ref == 'refs/heads/main' && secrets.KUBE_CONFIG_PROD != '' }}
+    # Associate the job with the production environment to access environment secrets
     environment:
       name: production
       url: https://recommendation-api.example.com
+
+    # Update the condition to use the secrets context
+    if: ${{ github.ref == 'refs/heads/main' && secrets.KUBE_CONFIG_PROD != '' }}
     
     steps:
       - name: Checkout code
