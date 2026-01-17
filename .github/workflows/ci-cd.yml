@@ -160,7 +160,7 @@ jobs:
           chmod +x ./scripts/smoke-test.sh
           ./scripts/smoke-test.sh https://staging-recommendation-api.example.com
         continue-on-error: true
-
+ # wa wlah ta tkhdem
   # Job 5: Deploy to production
   deploy-production:
     name: Deploy to Production
