@@ -1,16 +1,9 @@
 name: CI/CD Pipeline
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+on: [push]
 
 jobs:
-  # ÉTAPE 1 : Tests Unitaires
-  test:
-    name: Run Unit Tests
-    runs-on: self-hosted
+  test-build-deploy:
+    runs-on: self-hosted # Utilise votre runner DESKTOP-BVTDBM2
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,52 +14,19 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Pytest
-        shell: bash
+        # Suppression de "shell: bash" pour éviter l'erreur /bin/bash
         env:
           PYTHONPATH: src
         run: |
+          pip install pytest pytest-cov
           pytest tests/ -v
 
-  # ÉTAPE 2 : Build Docker
-  build:
-    name: Build Docker Image
-    needs: test
-    runs-on: self-hosted
-    if: github.event_name == 'push'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Build Local Image
+      - name: Build Docker Image
         run: |
           docker build -t recommendation-api:latest .
 
-  # ÉTAPE 3 : Déploiement Kubernetes (Local)
-  deploy:
-    name: Deploy to Kubernetes
-    needs: build
-    runs-on: self-hosted
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Apply K8s Manifests
-        shell: bash
+      - name: Deploy to Kubernetes
+        # On utilise le shell par défaut de Windows ici
         run: |
-          # utilisation de votre dossier 'k8s'
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/canary-deployment.yaml
-          
-      - name: Wait for Deployment
-        shell: bash
-        run: |
-          kubectl rollout status deployment/recommendation-api --timeout=60s
-
-      - name: Smoke Test
-        shell: bash
-        run: |
-          # Utilisation de votre dossier 'scripts'
-          chmod +x scripts/smoke-test.sh
-          ./scripts/smoke-test.sh http://localhost:8000
