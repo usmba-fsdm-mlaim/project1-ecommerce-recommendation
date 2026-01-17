@@ -153,7 +153,7 @@ jobs:
       - name: Run smoke tests
         run: |
           chmod +x ./scripts/smoke-test.sh
-          ./scripts/smoke-test.sh https://staging.yourapp.com
+          ./scripts/smoke-test.sh https://staging.bakirapp.com
 
   # Job 5: Deploy to production
   deploy-production:
