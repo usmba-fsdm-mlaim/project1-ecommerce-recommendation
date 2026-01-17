@@ -7,21 +7,24 @@ on:
     branches: [main, develop]
 
 env:
-  IMAGE_NAME: ${{ github.repository }}
-  PYTHON_VERSION: '3.10'
+  REGISTRY: docker.io
+  IMAGE_NAME: bakir1234/project1-ecommerce-recommendation
+  PYTHON_VERSION: "3.10"
 
+# ============================================================
+# JOB 1: TESTS
+# ============================================================
 jobs:
-# ============================================================
-# Job 1: Tests
-# ============================================================
   test:
     name: Run Tests
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
@@ -38,11 +41,11 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
-          file: ./coverage.xml
+          files: coverage.xml
         continue-on-error: true
 
 # ============================================================
-# Job 2: Lint
+# JOB 2: CODE QUALITY
 # ============================================================
   lint:
     name: Code Quality
@@ -71,7 +74,7 @@ jobs:
         continue-on-error: true
 
 # ============================================================
-# Job 3: Build Docker Image
+# JOB 3: BUILD & PUSH DOCKER IMAGE
 # ============================================================
   build:
     name: Build Docker Image
@@ -86,26 +89,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-#hellloo
-      - name: Log in to Docker Hub
+
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Extract metadata
+      - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push Docker image
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -116,7 +119,7 @@ jobs:
           cache-to: type=gha,mode=max
 
 # ============================================================
-# Job 4: Deploy STAGING
+# JOB 4: DEPLOY TO STAGING
 # ============================================================
   deploy-staging:
     name: Deploy to Staging
@@ -138,18 +141,17 @@ jobs:
       - name: Configure kubectl
         run: |
           echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
-          export KUBECONFIG=$(pwd)/kubeconfig
+          echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
 
-      - name: Deploy
+      - name: Deploy to Staging
         run: |
-          export KUBECONFIG=$(pwd)/kubeconfig
           kubectl set image deployment/recommendation-api \
             recommendation-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop-${{ github.sha }} \
             -n staging
           kubectl rollout status deployment/recommendation-api -n staging --timeout=5m
 
 # ============================================================
-# Job 5: Deploy PRODUCTION (Canary)
+# JOB 5: DEPLOY TO PRODUCTION (CANARY)
 # ============================================================
   deploy-production:
     name: Deploy to Production
@@ -171,12 +173,10 @@ jobs:
       - name: Configure kubectl
         run: |
           echo "${{ secrets.KUBE_CONFIG_PROD }}" | base64 -d > kubeconfig
-          export KUBECONFIG=$(pwd)/kubeconfig
+          echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
 
-      - name: Canary deployment
+      - name: Canary Deployment
         run: |
-          export KUBECONFIG=$(pwd)/kubeconfig
-
           kubectl apply -f k8s/canary-deployment.yaml
 
           kubectl set image deployment/recommendation-api-canary \
@@ -194,7 +194,7 @@ jobs:
           kubectl delete deployment recommendation-api-canary -n production || true
 
 # ============================================================
-# Job 6: Retrain model
+# JOB 6: MODEL RETRAINING CHECK
 # ============================================================
   retrain-check:
     name: Model Retraining Check
@@ -213,7 +213,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Trigger retraining
+      - name: Trigger retraining pipeline
         run: python scripts/retrain_pipeline.py
         env:
           MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
