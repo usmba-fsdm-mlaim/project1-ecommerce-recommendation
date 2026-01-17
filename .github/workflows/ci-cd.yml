@@ -54,7 +54,7 @@ jobs:
       - name: Apply K8s Manifests
         shell: bash
         run: |
-          # Utilisation de votre dossier 'k8s'
+          # utilisation de votre dossier 'k8s'
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/canary-deployment.yaml
