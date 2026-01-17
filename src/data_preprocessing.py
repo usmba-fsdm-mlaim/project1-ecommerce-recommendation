@@ -68,7 +68,7 @@ class DataPreprocessor:
         
         self.df['price'] = self.df['prices'].apply(extract_price)
         
-        # Fill missing prices with median by brand
+        # fill missing prices with median by brand
         self.df['price'] = self.df.groupby('brand')['price'].transform(
             lambda x: x.fillna(x.median())
         )
