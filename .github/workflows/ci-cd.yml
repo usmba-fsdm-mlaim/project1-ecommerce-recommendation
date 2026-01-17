@@ -173,8 +173,12 @@ jobs:
       name: production
       url: https://recommendation-api.example.com
 
-    # Update the condition to use the secrets context
-    if: ${{ github.ref == 'refs/heads/main' && secrets.KUBE_CONFIG_PROD != '' }}
+    # Set the KUBE_CONFIG_PROD secret as an environment variable
+    env:
+      KUBE_CONFIG_PROD: ${{ secrets.KUBE_CONFIG_PROD }}
+
+    # Update the condition to check the environment variable
+    if: ${{ github.ref == 'refs/heads/main' && env.KUBE_CONFIG_PROD != '' }}
     
     steps:
       - name: Checkout code
