@@ -7,18 +7,14 @@ import pandas as pd
 import numpy as np
 import json
 from datetime import datetime
-import re
+import re,os
 from sklearn.preprocessing import LabelEncoder
 import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-import os
-os.makedirs('data', exist_ok=True) # Cette ligne crée le dossier s'il manque
-with open('data/data_summary.json', 'w') as f:
-    json.dump(summary, f, indent=4)
-    
+
 class DataPreprocessor:
     """Clean and prepare Amazon product review data for recommendation system"""
     
@@ -250,6 +246,8 @@ class DataPreprocessor:
                 'end': str(self.cleaned_df['review_date'].max())
             }
         }
+        os.makedirs('data', exist_ok=True) 
+        
         
         with open('data/data_summary.json', 'w') as f:
             json.dump(summary, f, indent=2)
