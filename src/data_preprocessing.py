@@ -14,7 +14,11 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
+import os
+os.makedirs('data', exist_ok=True) # Cette ligne crée le dossier s'il manque
+with open('data/data_summary.json', 'w') as f:
+    json.dump(summary, f, indent=4)
+    
 class DataPreprocessor:
     """Clean and prepare Amazon product review data for recommendation system"""
     
