@@ -155,7 +155,7 @@ jobs:
 # ============================================================
   deploy-production:
     name: Deploy to Production
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build
     if: github.ref == 'refs/heads/main'
 
@@ -166,39 +166,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: azure/setup-kubectl@v3
-        with:
-          version: v1.28.0
-
-      - name: Configure kubectl
+      - name: Deploy to Kubernetes
         run: |
-          echo "${{ secrets.KUBE_CONFIG_PROD }}" | base64 -d > kubeconfig
-          echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
-
-      - name: Verify Kubernetes Configuration
-        run: |
-          echo "${KUBE_CONFIG_PROD}" | base64 -d > kubeconfig
-          export KUBECONFIG=$(pwd)/kubeconfig
-          kubectl config view
-
-      - name: Canary Deployment
-        run: |
-          export KUBECONFIG=$(pwd)/kubeconfig
           kubectl apply -f k8s/canary-deployment.yaml
-
-          kubectl set image deployment/recommendation-api-canary \
-            recommendation-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main-${{ github.sha }} \
-            -n production
-
-          sleep 300
-
-          kubectl set image deployment/recommendation-api \
-            recommendation-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main-${{ github.sha }} \
-            -n production
-
           kubectl rollout status deployment/recommendation-api -n production --timeout=5m
-
-          kubectl delete deployment recommendation-api-canary -n production || true
 
 # ============================================================
 # JOB 6: MODEL RETRAINING CHECK
