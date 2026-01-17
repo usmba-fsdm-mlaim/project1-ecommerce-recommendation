@@ -12,15 +12,12 @@ env:
   PYTHON_VERSION: '3.10'
 
 jobs:
-  # Job 1: Run tests
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    
+  test-build-deploy:
+    runs-on: self-hosted # Utilise votre runner DESKTOP-BVTDBM2
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -148,6 +145,7 @@ jobs:
           export KUBECONFIG=$(pwd)/kubeconfig
       
       - name: Deploy to Kubernetes
+        # on utilise le shell par défaut de Windows ici
         run: |
           export KUBECONFIG=$(pwd)/kubeconfig
           kubectl set image deployment/recommendation-api \

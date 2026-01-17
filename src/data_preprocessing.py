@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import json
 from datetime import datetime
-import re
+import re,os
 from sklearn.preprocessing import LabelEncoder
 import logging
 
@@ -68,7 +68,7 @@ class DataPreprocessor:
         
         self.df['price'] = self.df['prices'].apply(extract_price)
         
-        # Fill missing prices with median by brand
+        # fill missing prices with median by brand
         self.df['price'] = self.df.groupby('brand')['price'].transform(
             lambda x: x.fillna(x.median())
         )
@@ -246,6 +246,8 @@ class DataPreprocessor:
                 'end': str(self.cleaned_df['review_date'].max())
             }
         }
+        os.makedirs('data', exist_ok=True) 
+        
         
         with open('data/data_summary.json', 'w') as f:
             json.dump(summary, f, indent=2)
