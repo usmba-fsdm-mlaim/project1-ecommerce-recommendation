@@ -1,6 +1,6 @@
 """
 Unit tests for recommendation model
-Branch: feature/ml-model
+
 """
 
 import pytest
