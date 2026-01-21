@@ -1,6 +1,6 @@
 """
 Data Preprocessing Pipeline for E-commerce Recommendation System
-Branch: feature/data_preprocessing
+branch: feature/data_preprocessing
 """
 
 import pandas as pd
