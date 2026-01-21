@@ -2,7 +2,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: recommendation-api-hpa
-  namespace: ecommerce-recommendation
+  namespace: production
   labels:
     app: recommendation-api
 spec:
