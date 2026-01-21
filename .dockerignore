@@ -12,3 +12,4 @@ mlruns/
 tests/
 .github/
 k8s/
+git commit -m "Add Docker and Nginx configuration"
