@@ -7,7 +7,7 @@ __pycache__/
 venv/
 env/
 ENV/
-
+devops_env/
 # Data & Models
 data/*.csv
 models/*.pkl
