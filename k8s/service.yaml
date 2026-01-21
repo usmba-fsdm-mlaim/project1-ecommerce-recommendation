@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommendation-api-service
+  namespace: ecommerce-recommendation
+  labels:
+    app: recommendation-api
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: recommendation-api
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
