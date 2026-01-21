@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+venv/
+.git/
+.vscode/
+.idea/
+data/*.csv
+models/*.pkl
+mlruns/
+.pytest_cache/
+*.md
+tests/
+.github/
+k8s/
+git commit -m "Add Docker and Nginx configuration"
