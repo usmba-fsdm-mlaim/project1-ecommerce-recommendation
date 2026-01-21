@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: recommendation-api-service
-  namespace: ecommerce-recommendation
+  namespace: production
   labels:
     app: recommendation-api
   annotations:
