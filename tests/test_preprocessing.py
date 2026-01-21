@@ -5,7 +5,7 @@ import os
 import sys
 import tempfile
 import json
-#tst
+
 # Ajoute le dossier parent au chemin pour pouvoir importer le script principal
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
